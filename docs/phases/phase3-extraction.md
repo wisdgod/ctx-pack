@@ -11,7 +11,7 @@ regex = "1"
 
 ## 产出文件
 
-### src/extraction/mod.rs
+### src/extraction.rs
 
 ```rust
 pub struct Fragment {
@@ -48,7 +48,7 @@ pub struct ExtractionResult {
 
 对每个范围生成一个Fragment。is_partial = true(除非range覆盖全文)。
 
-### src/extraction/regex.rs
+### src/extraction/regex_extract.rs
 
 函数: `extract_regex(content: &str, pattern: &str, context_lines: u32) -> Result<ExtractionResult>`
 
@@ -61,7 +61,7 @@ pub struct ExtractionResult {
 
 ### 规则匹配器
 
-在 mod.rs 中:
+在 `src/extraction.rs` 中:
 
 函数: `match_rule<'a>(path: &str, rules: &'a [ExtractionRule], default_mode: ExtractionMode) -> &'a ExtractionRule`
 

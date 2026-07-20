@@ -77,7 +77,7 @@ Decode:
 - `Pipeline::decode_all(&self, input: &str) -> String`
   - stages按**反序**执行decode
 
-### src/encoding_layer/mod.rs
+### src/encoding_layer.rs
 
 公开: `TransformStage`, `IndentEncoder`, `AnchorEncoder`, `Pipeline`
 

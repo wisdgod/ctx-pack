@@ -15,8 +15,8 @@
 3. **迁就AI的容错设计**：我们简化patch格式（anchor-based而非精确行号），
    因为apply端有fuzzy match容错。工具适应AI的不精确性，而非要求AI精确。
 
-4. **增量一切**：文件发现是增量的（索引持久化），内容输出是增量的（patch/replace），
-   输出文件本身的更新也是增量的（manifest驱动局部重写）。
+4. **上下文增量**：文件发现依赖持久索引，内容输出支持patch/replace。
+   当前实现每次重写输出文件；manifest记录块位置，供检查和后续工具使用。
 
 ## 术语表
 
@@ -25,18 +25,23 @@
 | fid | 文件编号，持久分配给路径，永不回收 |
 | gen | 基线代号(generation)，replace时递增 |
 | pid | 补丁序号，patch时递增 |
-| anchor | 锚定行号，每N行标注一次的原始文件行号 |
+| anchor | 锚定行号，full extraction时对应原始文件行号；partial extraction时对应拼接后的阅读视图行号 |
 | prefix | XML标签前缀，如 `ctx`，产出 `<ctx:file>` 等标签 |
-| base_indent | 片段的典型起始缩进级别（元信息，不参与编码计算） |
+| base_indent | 设计保留概念；当前实现未输出该属性 |
 | snapshot | 文件raw内容的缓存副本，存于 .ctx-cache |
-| manifest | 描述输出文件结构的清单文件，支持局部重写 |
+| manifest | 描述输出文件结构的清单文件，记录块的字节和行范围 |
 | profile | 配置中的命名规则集，对应一种打包策略 |
+
+## 当前限制
+
+- `lines`/`regex` partial extraction 是阅读视图，不保证可反向apply；需要LLM返回可应用修改的文件应使用 `full` extraction。
+- `indent_encoding=true` 会把行首tab按 `tab_width` 归一化为空格。
 
 ## 技术栈
 
-- Rust 2021 edition
+- Rust 2024 edition
 - clap (derive API) — CLI
-- serde + serde_yaml — 配置
+- serde + serde_yaml_ng — 配置
 - ignore + globset — 文件发现
 - content_inspector — 二进制检测
 - encoding_rs — 字符编码检测与转换

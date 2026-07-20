@@ -2,13 +2,12 @@
 
 ## 核心定位
 
-清单文件是输出文件的**可操作索引**。
+清单文件是输出文件的**结构索引**。
 
 它精确记录每个块在输出文件中的位置(字节偏移+行范围)，
-使得增量更新时可以直接seek到对应位置局部重写，
-而非每次重新生成整个输出文件。
+供检查、调试和后续工具使用。
 
-对大代码库（输出文件数百KB甚至MB级），这是核心性能设计。
+当前实现每次重新生成整个输出文件，再写出新的manifest。
 
 ## 格式
 
@@ -71,7 +70,13 @@ tag_occurrences:
   "ctx:patch": [[91, 102]]
 ```
 
-## 增量重写流程
+`file_count` counts `<prefix:file>` blocks in the generated output. Incremental outputs that only
+contain patch/replace blocks may therefore have a lower `file_count` than the index's tracked file
+set.
+
+## 计划中的增量重写流程
+
+当前代码尚未实现局部重写。manifest保留足够的信息，使后续实现可以采用以下流程：
 
 1. 读取旧manifest
 2. 确定哪些fid的内容变化了（index hash对比）

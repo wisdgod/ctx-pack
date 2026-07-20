@@ -1,0 +1,46 @@
+[package]
+name = "ctx-pack"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.97.1"
+license = "MIT"
+readme = "README.md"
+description = "Configuration-driven source packing for LLM context, with a versioning protocol for incremental patch/replace"
+repository = "https://github.com/wisdgod/ctx-pack"
+keywords = ["llm", "context", "cli", "patch", "codebase"]
+categories = ["command-line-utilities", "development-tools"]
+# Keep the published package lean: docs/, agent files, toolchain pins stay in the repo only.
+include = ["src/**", "Cargo.toml", "README.md", "LICENSE"]
+
+[[bin]]
+name = "ctx-pack"
+path = "src/main.rs"
+
+[dependencies]
+# CLI & configuration
+clap = { version = "4", features = ["derive"] }
+serde = { version = "1", features = ["derive"] }
+serde_yaml = { package = "serde_yaml_ng", version = "0.10" }
+
+# Errors & diagnostics
+anyhow = "1"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# File discovery & content detection
+ignore = "0.4"
+globset = "0.4"
+content_inspector = "0.2"
+encoding_rs = "0.8"
+
+# Extraction & apply (pattern matching over content and LLM output)
+regex = "1"
+
+# Versioning (diff, content hashing, timestamps)
+similar = "3"
+sha2 = "0.11"
+hex = "0.4"
+jiff = { version = "0.2.34", default-features = false, features = ["std", "serde"] }
+
+[dev-dependencies]
+tempfile = "3"

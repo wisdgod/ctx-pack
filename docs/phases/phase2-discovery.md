@@ -34,7 +34,7 @@ encoding_rs = "0.8"
 从stdin逐行读取路径。跳过空行和#开头的注释行。
 验证路径存在，不存在的路径发warning。
 
-### src/discovery/mod.rs
+### src/discovery.rs
 
 函数: `discover(profile: &Profile) -> Result<Vec<DiscoveredFile>>`
 
@@ -66,7 +66,7 @@ pub struct DiscoveredFile {
 4. 转换为UTF-8
 5. 转换失败 → 返回错误
 
-### src/detection/mod.rs
+### src/detection.rs
 
 函数: `load_file_content(path: &Path, binary_policy: BinaryPolicy) -> Result<Option<String>>`
 

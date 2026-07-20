@@ -20,6 +20,10 @@ decode(encode(text)) == text
 pipeline.decode_all(pipeline.encode_all(text)) == text
 ```
 
+例外: 当前 `IndentEncoder` 会把行首 tab 按 `tab_width` 归一化为空格。
+因此包含行首 tab 的输入满足的是“解码到归一化后的文本”，不是逐字节还原。
+如果需要保留 tab/space 的原始混合形态，应关闭 `indent_encoding` 或后续引入保真缩进编码。
+
 ### Stage 1: 绝对缩进编码 (IndentEncoder)
 
 输入: raw文本行
@@ -30,7 +34,7 @@ pipeline.decode_all(pipeline.encode_all(text)) == text
 - 替换为 `[N]` 前缀 + 剩余内容
 - 空行(仅换行) → 空行(不加前缀)
 - 纯空白行 → `[N]`(N为空白数，无后续内容)
-- Tab: 1 tab = 配置中的tab_width(默认4)个空格
+- Tab: 1 tab = 配置中的tab_width(默认4)个空格；这是有损归一化，decode 会恢复为空格
 
 示例:
 ```
@@ -61,8 +65,9 @@ pipeline.decode_all(pipeline.encode_all(text)) == text
 参数: `anchor_interval` (如10)
 
 规则:
-- 行号基于原始文件行号(1-based)
-- 行号对齐宽度 = 原始文件总行数的位数 + 1
+- full extraction 时行号基于原始文件行号(1-based)
+- lines/regex partial extraction 当前基于“拼接后的提取视图”重新编号；该输出只适合阅读，不保证可反向 apply
+- 行号对齐宽度 = 当前编码视图总行数的位数 + 1
 - 每 anchor_interval 行标注
 - 第1行始终标注
 - 非锚定行用空格填充对齐
@@ -136,12 +141,33 @@ replace发出后，同fid的所有旧gen块作废。
 |------|------|------|
 | `prefix:prompt` | 协议自描述文本 | 无 |
 | `prefix:tree` | 文件树索引 | 无 |
-| `prefix:file` | 文件全量内容 | id, gen, path, base_indent(可选) |
+| `prefix:file` | 文件内容 | id, gen, path, extraction(可选, partial时输出；`id` 即 fid) |
 | `prefix:patch` | 增量补丁 | fid, gen, pid |
 | `prefix:replace` | 全量替换 | fid, gen |
 
+### Patch内容投影
+
+`file` 和 `replace` 块内部使用完整编码输出，包括 anchor 行号栏。
+`patch` hunk 行使用去掉左侧行号栏后的内容投影:
+
+```
+   1 | [0]fn main() {
+     | [4]old();
+```
+
+在 patch 中写作:
+
+```
+@@ anchor:1 @@
+ [0]fn main() {
+-[4]old();
++[4]new();
+```
+
+`@@ anchor:N @@` 中的 N 仍引用 file/replace 块左侧可见的 anchor 行号。
+这样 LLM 不需要复制空白对齐和 `|` 分隔符，只需要保持内容行本身一致。
+
 ### base_indent属性
 
-`base_indent="N"` 出现在 file/replace 标签上。
-表示此片段在原始文件中的典型起始缩进。
-仅供LLM参考，不影响 `[N]` 编码值（编码始终用绝对值）。
+早期设计保留过 `base_indent="N"` 属性，用于描述片段在原始文件中的典型起始缩进。
+当前实现不输出该属性；缩进编码始终使用绝对 `[N]` 值。

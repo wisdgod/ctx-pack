@@ -15,7 +15,7 @@
 [编码后内容]
 </{prefix}:file>
 
-<{prefix}:file id="2" gen="0" path="src/lib.rs" base_indent="4">
+<{prefix}:file id="2" gen="0" path="src/lib.rs">
 [编码后内容]
 </{prefix}:file>
 
@@ -61,11 +61,32 @@
 </ctx:file>
 ```
 
-可选属性: `base_indent="{N}"`
+当前实现的属性: `id`, `gen`, `path`。
+`id` 与 patch/replace 中的 `fid` 是同一个文件编号。
+当文件来自partial extraction时，会额外输出 `extraction="partial"`。
 
-## 内容中的片段省略
+## 部分提取输出
 
-当extraction使用lines或regex模式时，省略部分用标记表示:
+当extraction使用lines或regex模式时，当前实现会把选中的fragment内容按顺序拼接后编码，
+不会输出省略标记或fragment边界。
+
+这类输出目前是**阅读视图**。因为没有fragment边界和原始行号映射，
+LLM基于partial视图生成的patch/replace不能可靠应用回完整源文件。
+需要可反向apply的文件应使用full extraction。
+
+启用anchor行号时，partial输出中的行号是拼接后的提取视图行号，
+不是原始源文件行号。
+
+partial file块示例:
+
+```
+<ctx:file id="5" gen="0" path="src/large.rs" extraction="partial">
+   1 | [0]pub fn important() {
+     | [4]todo!()
+</ctx:file>
+```
+
+早期设计曾考虑如下省略标记，当前未实现:
 
 ```
 <ctx:file id="5" gen="0" path="src/large.rs">

@@ -13,13 +13,13 @@
 pub enum ScannedBlock {
     Patch {
         fid: u32,
-        gen: u32,
+        generation: u32,  // XML属性仍为 gen
         pid: u32,
         body: String,
     },
     Replace {
         fid: u32,
-        gen: u32,
+        generation: u32,  // XML属性仍为 gen
         body: String,
     },
 }
@@ -47,7 +47,7 @@ pub struct ApplyResult {
 pub struct AppliedFile {
     pub fid: u32,
     pub path: String,
-    pub was_dirty: bool,  // 是否经过fuzzy match
+    pub was_dirty: bool,  // apply前磁盘内容是否已偏离index hash
 }
 
 pub struct RejectedFile {
@@ -58,7 +58,7 @@ pub struct RejectedFile {
 }
 ```
 
-函数: `execute_apply(blocks: &[ScannedBlock], index: &IndexState, cache: &SnapshotCache, pipeline: &Pipeline, dry_run: bool) -> Result<ApplyResult>`
+函数: `execute_apply(blocks: &[ScannedBlock], index: &mut IndexState, cache: &SnapshotCache, pipeline: &Pipeline, prefix: &str, dry_run: bool) -> Result<ApplyResult>`
 
 对每个block:
 
@@ -66,8 +66,7 @@ pub struct RejectedFile {
 1. fid → index查路径
 2. decode pipeline: body → raw content
 3. 脏检测: hash(当前磁盘文件) vs index.current_hash
-   - 不匹配 → warn "file modified externally"
-   - replace情况下仍然可以应用(全量替换)，但要warn
+   - 不匹配 → 写 .rej 文件, 跳过（避免覆盖外部修改）
 4. 写文件(除非dry_run)
 5. 更新index: hash, gen, pid=0
 6. 存新快照
@@ -76,6 +75,7 @@ pub struct RejectedFile {
 1. fid → index查路径
 2. 读取当前磁盘文件
 3. 脏检测: hash比对
+   - 不匹配 → 记录dirty警告，但仍尝试patch
 4. encode当前内容(用pipeline)
 5. 解析patch body中的hunks
 6. 对每个hunk:
@@ -93,13 +93,13 @@ pub struct RejectedFile {
 
 ### src/apply/reject.rs
 
-函数: `write_reject(path: &Path, block: &ScannedBlock) -> Result<PathBuf>`
+函数: `write_reject(path: &Path, block: &ScannedBlock, reason: &str, prefix: &str) -> Result<PathBuf>`
 
 在目标文件旁写 `{filename}.rej`:
 - 包含原始patch/replace块内容
 - 包含失败原因注释
 
-### src/apply/mod.rs
+### src/apply.rs
 
 apply命令的完整handler:
 1. 读取输入(文件或stdin)
@@ -107,7 +107,7 @@ apply命令的完整handler:
 3. scan_blocks
 4. 加载IndexState和SnapshotCache
 5. build_pipeline(config)
-6. execute_apply
+6. execute_apply(prefix + dry-run)
 7. 打印结果摘要
 8. 保存IndexState
 

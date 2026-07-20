@@ -7,7 +7,7 @@
 ## 新增依赖
 
 ```toml
-similar = "2"
+similar = "3"
 ```
 
 ## 产出文件
@@ -22,8 +22,7 @@ similar = "2"
 
 ```rust
 pub struct DiffHunk {
-    pub old_start: u32,   // 在old文本中的起始行
-    pub new_start: u32,   // 在new文本中的起始行
+    pub old_start: u32,   // 在old文本中的起始行，用于anchor定位
     pub removes: Vec<String>,
     pub adds: Vec<String>,
     pub context_before: Vec<String>,  // hunk前的上下文行
@@ -45,7 +44,7 @@ pub struct DiffHunk {
 
 简单包装encoded_content为replace标签。
 
-### src/version/mod.rs
+### src/version.rs
 
 核心决策函数:
 

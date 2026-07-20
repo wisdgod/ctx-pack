@@ -72,7 +72,7 @@ pub struct BlockInfo {
 
 将blocks信息序列化为manifest YAML。
 
-### src/pack/mod.rs
+### src/pack.rs
 
 整合上述，提供 `pack` 命令的完整handler。
 

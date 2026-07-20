@@ -1,0 +1,8 @@
+# Stable-compatible subset of rust-lang/rust's rustfmt.toml.
+edition = "2024"
+style_edition = "2024"
+max_width = 100
+use_small_heuristics = "Max"
+merge_derives = false
+use_field_init_shorthand = true
+newline_style = "Unix"

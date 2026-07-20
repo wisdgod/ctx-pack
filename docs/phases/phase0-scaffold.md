@@ -1,5 +1,8 @@
 # Phase 0: 项目脚手架
 
+> 历史说明：本文件保留 Phase 0 的原始实现提示。当前源码已经完成所有 CLI handler，
+> `Cargo.toml` 使用 Rust 2024 / Rust 1.96 baseline，项目也已迁移到无 `mod.rs` 布局。
+
 ## 目标
 项目可编译，CLI可解析，配置可加载。无业务逻辑。
 
@@ -11,12 +14,13 @@
 [package]
 name = "ctx-pack"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
+rust-version = "1.96"
 
 [dependencies]
 clap = { version = "4", features = ["derive"] }
 serde = { version = "1", features = ["derive"] }
-serde_yaml = "0.9"
+serde_yaml = { package = "serde_yaml_ng", version = "0.10" }
 anyhow = "1"
 thiserror = "2"
 tracing = "0.1"
@@ -30,8 +34,8 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 - 初始化 tracing-subscriber（env-filter, 默认info级别）
 - 解析CLI参数
 - 加载配置文件（如果存在）
-- match子命令分发到stub handler
-- 所有handler当前只打印"not implemented"
+- match子命令分发到handler
+- Phase 0 阶段允许 handler 先是stub；当前实现已接入完整功能
 
 ### src/cli.rs
 
@@ -96,18 +100,18 @@ size string ("500KB"等) 用自定义deserializer解析为 u64 字节数。
 
 校验返回 `Vec<ConfigWarning>`，不一定abort。
 
-### src/config/mod.rs
+### src/config.rs
 
 公开接口:
 - `load_config(path: Option<&Path>) -> Result<Config>`
   - 如果path=None，在当前目录向上搜索 `ctx-pack.yaml`
   - 找不到则返回全默认Config
-- `Config::validate(&self) -> Vec<ConfigWarning>`
+- `validate_config(config: &Config) -> Vec<ConfigWarning>`
 
 ## 验证标准
 
 - `cargo build` 通过
-- `cargo run -- init` 打印 "not implemented"
+- `cargo run -- init` 生成默认 `ctx-pack.yaml`
 - `cargo run -- pack --profile test` 解析参数正确
 - 手写一个示例 `ctx-pack.yaml`，load + validate 不panic
 - `cargo test` 通过（配置解析的单元测试）

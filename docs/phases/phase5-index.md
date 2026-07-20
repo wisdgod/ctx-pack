@@ -6,7 +6,7 @@
 ## 新增依赖
 
 ```toml
-sha2 = "0.10"
+sha2 = "0.11"
 chrono = { version = "0.4", features = ["serde"] }
 ```
 
@@ -65,7 +65,7 @@ pub struct SnapshotCache {
 - `cleanup_all(&self, index: &IndexState, retain_last_n: u32) -> Result<()>`
   对所有active文件执行cleanup
 
-### src/index/mod.rs
+### src/index.rs
 
 hash计算函数: `compute_hash(content: &str) -> String`
 返回 "sha256:{hex}"

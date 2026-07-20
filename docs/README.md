@@ -1,8 +1,8 @@
 # ctx-pack Documentation
 
-This directory contains the complete architecture and implementation plan for ctx-pack.
+This directory contains the architecture, protocol notes, and original implementation roadmap for ctx-pack.
 
-本目录包含 ctx-pack 的完整架构设计与实现计划。
+本目录包含 ctx-pack 的架构设计、协议说明和原始实现路线图。
 
 ## Reading Order
 
@@ -15,14 +15,14 @@ This directory contains the complete architecture and implementation plan for ct
 **If you want to understand the output format:**
 
 4. [`formats/output.md`](./formats/output.md) - `.ctx` file structure
-5. [`formats/manifest.md`](./formats/manifest.md) - Manifest as operational index
+5. [`formats/manifest.md`](./formats/manifest.md) - Manifest as structural index
 6. [`formats/patch.md`](./formats/patch.md) - Patch/Replace block syntax
 
 **If you want to understand the config:**
 
 7. [`config.md`](./config.md) - Full YAML schema reference
 
-**If you want to implement:**
+**If you want historical implementation context:**
 
 8. [`phases/phase0-scaffold.md`](./phases/phase0-scaffold.md) through [`phases/phase8-finishing.md`](./phases/phase8-finishing.md) - Sequential implementation plan
 
@@ -36,7 +36,7 @@ docs/
 ├── config.md              YAML configuration schema reference
 ├── formats/
 │   ├── output.md          .ctx output file format specification
-│   ├── manifest.md        Manifest file: structure, incremental rewrite strategy
+│   ├── manifest.md        Manifest file structure
 │   └── patch.md           Patch and Replace block format specification
 └── phases/
     ├── phase0-scaffold.md   CLI + config + project init
@@ -52,21 +52,20 @@ docs/
 
 ## For AI Coding Assistants
 
-Each phase document in `phases/` is self-contained enough to be used as an AI coding prompt. They specify:
+The phase documents in `phases/` were written as self-contained AI coding prompts. They specify:
 
 - Exact file paths and module structure
 - Function signatures and data structures
 - Behavioral rules and edge cases
 - Test requirements with concrete examples
 
-Recommended workflow:
+Current workflow:
 
-1. Feed the AI the relevant phase document
-2. Optionally include `architecture.md` and `protocol.md` for context
-3. Review generated code against the spec
-4. Run `cargo test` before moving to the next phase
+1. Read the source tree first; it is the source of truth.
+2. Use phase docs for design intent and missing-edge-case context.
+3. Run `cargo check`, `cargo fmt --check`, `cargo test`, `cargo clippy -- -D warnings`, and `git diff --check` before accepting changes.
 
-Phase dependencies are linear: each phase builds on the previous. Do not skip phases.
+The implementation no longer uses `mod.rs`; top-level modules are `src/<module>.rs` plus `src/<module>/` submodules.
 
 ## Design Process
 
@@ -74,7 +73,7 @@ This documentation was produced through a multi-model collaborative design proce
 
 - **[wisdgod](https://github.com/wisdgod)**: Product requirements, use-case expertise, final decisions
 - **Claude (Anthropic)**: Lead system design - analysis, decomposition, architecture, protocol specification, implementation planning
-- **Gemini (Google)**: Adversarial review - identified gaps in diff-on-encoded-content ordering, apply-side dirty state detection, bidirectional encoding requirement, and reframed the manifest as a performance-critical operational index rather than passive metadata
+- **Gemini (Google)**: Adversarial review - identified gaps in diff-on-encoded-content ordering, apply-side dirty state detection, bidirectional encoding requirement, and reframed the manifest as a structural index with future performance potential rather than passive metadata
 - **Codex (OpenAI)**: Repository packaging and documentation structure for publication
 
 The design went through multiple revision cycles incorporating feedback from all parties.
