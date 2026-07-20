@@ -209,7 +209,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "ctx-pack"
+name = "ctxpack"
 version = "0.1.0"
 dependencies = [
  "anyhow",

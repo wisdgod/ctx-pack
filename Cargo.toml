@@ -1,5 +1,6 @@
 [package]
-name = "ctx-pack"
+# crates.io name; the installed binary is still `ctx-pack` (see [[bin]]).
+name = "ctxpack"
 version = "0.1.0"
 edition = "2024"
 rust-version = "1.97.1"

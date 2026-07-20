@@ -135,6 +135,13 @@ Key subsystems / 关键子系统:
 - Rust 1.97+ (early CLI baseline; may track current stable before initial release)
 - Cargo
 
+### Install / 安装
+
+```bash
+# The crate is published as `ctxpack`; the installed binary is `ctx-pack`.
+cargo install ctxpack
+```
+
 ### Build / 构建
 
 ```bash
