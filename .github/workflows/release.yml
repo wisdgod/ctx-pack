@@ -25,10 +25,18 @@ jobs:
     name: publish to crates.io
     runs-on: ubuntu-latest
     needs: verify
+    # Trusted Publishing (OIDC): no stored token. The environment name and this
+    # workflow's filename must match the Trusted Publisher config on crates.io.
     environment: crates-io
+    permissions:
+      id-token: write
+      contents: read
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
+      - name: Authenticate with crates.io
+        id: auth
+        uses: rust-lang/crates-io-auth-action@v1
       - run: cargo publish
         env:
-          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+          CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token }}
